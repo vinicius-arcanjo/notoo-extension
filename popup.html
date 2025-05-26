@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Game Info Scraper</title>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      width: 300px;
+      padding: 10px;
+    }
+    h1 {
+      font-size: 18px;
+      color: #333;
+    }
+    button {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px 0;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #3367d6;
+    }
+    #status {
+      margin-top: 10px;
+      color: #666;
+    }
+    #results {
+      margin-top: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 5px;
+      display: none;
+    }
+    .game-item {
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+  <h1>Game Info Scraper</h1>
+
+  <div>
+    <button id="scrapeButton">Scrape Game Information</button>
+    <button id="exportButton">Export Data (JSON)</button>
+    <button id="clearButton">Clear Data</button>
+  </div>
+
+  <div id="status">Ready to scrape game information.</div>
+
+  <div id="results"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
