@@ -1,92 +1,110 @@
-/**
- * Game Info Scraper - Background Script
- * This script runs in the background and manages the extension's state.
- */
+// background.js - Service worker da extensão
 
-// Initialize when the extension is installed or updated
-chrome.runtime.onInstalled.addListener(function() {
-  console.log('Game Info Scraper extension installed or updated');
+// Listener para receber mensagens do content script
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "sendToNotion") {
+    const pageData = request.pageData || {};
 
-  // Initialize storage with empty game data if it doesn't exist
-  chrome.storage.local.get(['gameData'], function(result) {
-    if (!result.gameData) {
-      chrome.storage.local.set({gameData: []});
-    }
-  });
-});
+    // Obter chave da API e ID do banco de dados do armazenamento
+    chrome.storage.local.get(["notionApiKey", "notionDatabaseId"], (res) => {
+      const notionApiKey = res.notionApiKey;
+      const notionDatabaseId = res.notionDatabaseId;
 
-// Listen for messages from content scripts or popup
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  // Handle any background-specific actions here
-  if (request.action === "getStats") {
-    chrome.storage.local.get(['gameData'], function(result) {
-      const gameData = result.gameData || [];
-
-      // Calculate some basic stats
-      const stats = {
-        totalGames: gameData.length,
-        platforms: {},
-        sources: {},
-        lastScraped: gameData.length > 0 ? gameData[gameData.length - 1].scrapedAt : null
-      };
-
-      // Count games by platform and source
-      gameData.forEach(game => {
-        if (game.platform) {
-          stats.platforms[game.platform] = (stats.platforms[game.platform] || 0) + 1;
-        }
-
-        if (game.source) {
-          stats.sources[game.source] = (stats.sources[game.source] || 0) + 1;
-        }
-      });
-
-      sendResponse({success: true, stats: stats});
-    });
-
-    return true; // Required for async response
-  }
-});
-
-// Optional: Add context menu for quick access to scraping
-chrome.contextMenus.create({
-  id: "scrapeGameInfo",
-  title: "Scrape Game Information",
-  contexts: ["page"]
-});
-
-// Handle context menu clicks
-chrome.contextMenus.onClicked.addListener(function(info, tab) {
-  if (info.menuItemId === "scrapeGameInfo") {
-    // Send message to content script to start scraping
-    chrome.tabs.sendMessage(tab.id, {action: "scrapeGames"}, function(response) {
-      if (chrome.runtime.lastError) {
-        console.error("Error:", chrome.runtime.lastError.message);
+      // Validação de campos obrigatórios antes do envio
+      if (!notionApiKey || !notionDatabaseId) {
+        console.error("Notion API Key ou Database ID não configurados.");
+        sendResponse({ success: false, error: "Configuração ausente" });
+        return;
+      }
+      if (!pageData.title || pageData.title.trim() === "") {
+        console.error("Título do jogo não encontrado na página.");
+        sendResponse({ success: false, error: "Título não encontrado" });
         return;
       }
 
-      if (response && response.success) {
-        // Show notification with results
-        chrome.notifications.create({
-          type: "basic",
-          iconUrl: "images/icon128.png",
-          title: "Game Info Scraper",
-          message: `Scraped ${response.games.length} games from the current page.`
+      // Montar payload para criar uma página no Notion
+      const properties = {
+        title: {
+          title: [
+            { text: { content: pageData.title } }
+          ]
+        },
+        slug: {
+          rich_text: [
+            { text: { content: pageData.slug } }
+          ]
+        },
+        content: {
+          rich_text: [
+            { text: { content: pageData.content || "" } }
+          ]
+        },
+        releaseDate: {
+          date: {
+            // Converter data de lançamento para formato ISO (AAAA-MM-DD) se possível
+            start: pageData.releaseDate ? new Date(pageData.releaseDate).toISOString().slice(0, 10) : null
+          }
+        },
+        description: {
+          rich_text: [
+            { text: { content: pageData.description || "" } }
+          ]
+        },
+        genres: {
+          multi_select: (pageData.genres || []).map(g => ({ name: g }))
+        },
+        platforms: {
+          multi_select: (pageData.platforms || []).map(p => ({ name: p }))
+        },
+        image: {
+          url: pageData.image || ""
+        },
+        rating: {
+          number: pageData.rating !== undefined ? pageData.rating : null
+        },
+        completed: {
+          checkbox: !!pageData.completed
+        },
+        playAgain: {
+          checkbox: !!pageData.playAgain
+        },
+        played: {
+          checkbox: !!pageData.played
+        }
+      };
+
+      const notionPayload = {
+        parent: { database_id: notionDatabaseId },
+        properties: properties
+      };
+
+      // Configurar a requisição para a API do Notion
+      fetch("https://api.notion.com/v1/pages", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + notionApiKey,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28"
+        },
+        body: JSON.stringify(notionPayload)
+      })
+        .then(response => response.json().then(data => ({ status: response.status, data })))
+        .then(({ status, data }) => {
+          if (status >= 200 && status < 300) {
+            console.log("Dados enviados com sucesso ao Notion.", data);
+            sendResponse({ success: true });
+          } else {
+            console.error("Falha ao enviar para o Notion:", data);
+            sendResponse({ success: false, error: data });
+          }
+        })
+        .catch(error => {
+          console.error("Erro na requisição ao Notion:", error);
+          sendResponse({ success: false, error: error });
         });
-
-        // Store the scraped data
-        chrome.storage.local.get(['gameData'], function(result) {
-          let gameData = result.gameData || [];
-
-          // Filter out duplicates
-          const newGames = response.games.filter(newGame =>
-            !gameData.some(existingGame => existingGame.title === newGame.title)
-          );
-
-          gameData = [...gameData, ...newGames];
-          chrome.storage.local.set({gameData: gameData});
-        });
-      }
     });
+
+    // Indica que queremos enviar a resposta de forma assíncrona
+    return true;
   }
 });
