@@ -22,7 +22,13 @@ function createFloatingButton() {
       if (response && response.success) {
         showToast("✔ Jogo enviado ao Notion com sucesso!");
       } else {
-        showToast("❌ Erro ao enviar dados para o Notion.");
+        // Exibir mensagem de erro mais detalhada se disponível
+        let errorMsg = "❌ Erro ao enviar dados para o Notion.";
+        if (response && response.error) {
+          errorMsg = `❌ ${response.error}`;
+        }
+        showToast(errorMsg);
+        console.error("Detalhes do erro:", response ? response.details : "Resposta vazia");
       }
     });
   });
