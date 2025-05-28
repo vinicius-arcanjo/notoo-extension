@@ -42,8 +42,8 @@ function initializeExtension() {
     // If Steam is enabled and we have a games database ID, show the button
     if (steamEnabled && config.databases?.games?.id) {
       // Wait for the page to fully load
-      window.addEventListener('load', function() {
-        createFloatingButton();
+      window.addEventListener('DOMContentLoaded', function() {
+	      createFloatingButton();
       });
     }
   }
