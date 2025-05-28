@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notoo - Opções</title>
+  <link rel="stylesheet" href="../styles/global.css" />
+  <link rel="stylesheet" href="options.css" />
+  <script src="options.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Notoo</h1>
+      <p class="tagline">Configurações Avançadas</p>
+    </header>
+
+    <section class="settings">
+      <h2>Configuração da API do Notion</h2>
+
+      <div class="form-group">
+        <label for="notionToken">Token da API do Notion</label>
+        <input type="password" id="notionToken" placeholder="Insira seu token da API do Notion" />
+        <small>Obtenha seu token em <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a></small>
+      </div>
+
+      <div class="form-group">
+        <label for="notionDatabaseId">ID do Banco de Dados</label>
+        <input type="text" id="notionDatabaseId" placeholder="Insira o ID do banco de dados do Notion" />
+        <small>ID encontrado na URL do seu banco de dados</small>
+      </div>
+
+      <div class="form-group">
+        <button id="testConnection" class="btn secondary">Testar Conexão</button>
+      </div>
+    </section>
+
+    <section class="settings">
+      <h2>Sites Compatíveis</h2>
+      <p class="description">Ative ou desative a extensão para os sites compatíveis.</p>
+
+      <div class="sites-list">
+        <div class="site-item">
+          <div class="site-info">
+            <div class="site-icon steam-icon">S</div>
+            <div>
+              <h3>Steam</h3>
+              <p>Salve jogos da Steam diretamente no seu banco de dados do Notion.</p>
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="steamToggle" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+
+        <div class="site-item disabled">
+          <div class="site-info">
+            <div class="site-icon coming-soon-icon">+</div>
+            <div>
+              <h3>Mais sites em breve</h3>
+              <p>Estamos trabalhando para adicionar suporte a mais sites.</p>
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" disabled>
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section class="settings">
+      <h2>Aparência do Botão</h2>
+
+      <div class="form-group">
+        <label for="buttonPosition">Posição do Botão</label>
+        <select id="buttonPosition">
+          <option value="bottom-right">Inferior Direito</option>
+          <option value="bottom-left">Inferior Esquerdo</option>
+          <option value="top-right">Superior Direito</option>
+          <option value="top-left">Superior Esquerdo</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="actions">
+      <button id="saveSettings" class="btn primary">Salvar Configurações</button>
+      <button id="resetSettings" class="btn danger">Restaurar Padrões</button>
+    </section>
+
+    <section class="status">
+      <div id="statusMessage"></div>
+    </section>
+
+    <footer>
+      <p>Notoo v0.0.1 - Integração simples com o Notion</p>
+      <p><a href="https://github.com/yourusername/notoo-extension" target="_blank">GitHub</a> | <a href="mailto:seu-email@exemplo.com">Contato</a></p>
+    </footer>
+  </div>
+</body>
+</html>
