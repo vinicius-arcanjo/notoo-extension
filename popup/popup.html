@@ -1,45 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Configurações - Steam Notion Scraper</title>
-    <style>
-      body { font-family: Arial, sans-serif; margin: 10px; width: 250px; }
-      label { display: block; margin-bottom: 8px; font-size: 14px; }
-      input[type=text], input[type=password] {
-        width: 100%; box-sizing: border-box;
-        margin-top: 4px; margin-bottom: 12px;
-        padding: 4px;
-      }
-      #saveBtn {
-        background-color: #3a8ee6; color: #fff;
-        border: none; border-radius: 4px;
-        padding: 6px 10px;
-        cursor: pointer;
-        width: 100%;
-        font-size: 14px;
-      }
-      #saveBtn:hover { background-color: #337acc; }
-      #status { margin-top: 5px; font-size: 13px; color: green; }
-    </style>
-  </head>
-  <body>
-    <h3>Configurações</h3>
-    <label>
-      Chave da API do Notion:
-      <input type="password" id="apiKey" placeholder="Notion API Key..." />
-    </label>
-    <label>
-      ID da Base de Dados:
-      <input type="text" id="databaseId" placeholder="Database ID..." />
-    </label>
-    <label>
-      <input type="checkbox" id="enableButton" />
-      Exibir botão flutuante na Steam
-    </label>
-    <button id="saveBtn">Salvar</button>
-    <div id="status"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notoo</title>
+  <script src="popup.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="w-72 p-4 bg-white text-gray-800 font-sans">
+  <div class="flex flex-col items-start space-y-3">
+    <h1 class="text-xl font-semibold">Notoo</h1>
+    <p class="text-sm text-gray-600">Extensão integrada ao Notion.</p>
 
-    <script src="popup.js"></script>
-  </body>
+    <button id="captureBtn" class="w-full bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition">
+      Capturar esta página
+    </button>
+
+    <div id="status" class="text-xs text-gray-500 mt-2 hidden">Enviando...</div>
+  </div>
+</body>
 </html>
