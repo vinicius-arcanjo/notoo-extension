@@ -5,10 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Notoo</title>
   <link rel="stylesheet" href="popup.css" />
+  <link rel="stylesheet" href="../styles/global.css" />
   <script src="popup.js" defer></script>
 </head>
 <body>
-  <h1>Notoo</h1>
+  <div class="container">
+    <header>
+      <h1>Notoo</h1>
+      <p class="tagline">Capture e salve no Notion com um clique</p>
+    </header>
 
+    <section class="settings">
+      <h2>Configurações</h2>
+
+      <div class="form-group">
+        <label for="notionToken">Token da API do Notion</label>
+        <input type="password" id="notionToken" placeholder="Insira seu token da API do Notion" />
+        <small>Obtenha seu token em <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a></small>
+      </div>
+
+      <div class="form-group">
+        <label for="notionDatabaseId">ID do Banco de Dados</label>
+        <input type="text" id="notionDatabaseId" placeholder="Insira o ID do banco de dados do Notion" />
+        <small>ID encontrado na URL do seu banco de dados</small>
+      </div>
+
+      <div class="form-group sites-toggle">
+        <label>Sites Compatíveis</label>
+        <div class="toggle-container">
+          <div class="site-toggle">
+            <span>Steam</span>
+            <label class="switch">
+              <input type="checkbox" id="steamToggle" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <button id="saveSettings" class="btn primary">Salvar Configurações</button>
+      </div>
+    </section>
+
+    <section class="status">
+      <div id="statusMessage"></div>
+    </section>
+
+    <footer>
+      <p>Notoo v0.0.1 - Integração simples com o Notion</p>
+      <p><a href="#" id="openOptions">Configurações avançadas</a></p>
+    </footer>
+  </div>
 </body>
 </html>

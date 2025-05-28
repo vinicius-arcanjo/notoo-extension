@@ -1,0 +1,118 @@
+/* Popup specific styles */
+
+.container {
+  width: 350px;
+  padding: 16px;
+}
+
+header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+h1 {
+  color: var(--primary-color);
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.tagline {
+  color: var(--text-light);
+  font-size: 14px;
+}
+
+section {
+  margin-bottom: 20px;
+}
+
+h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(46, 89, 255, 0.2);
+}
+
+small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-light);
+  font-size: 12px;
+}
+
+.sites-toggle {
+  margin-top: 20px;
+}
+
+.toggle-container {
+  margin-top: 10px;
+}
+
+.site-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.site-toggle:last-child {
+  border-bottom: none;
+}
+
+#saveSettings {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.status {
+  padding: 10px;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.status.success {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: var(--success-color);
+  border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.status.error {
+  background-color: rgba(255, 77, 77, 0.1);
+  color: var(--error-color);
+  border: 1px solid rgba(255, 77, 77, 0.2);
+}
+
+footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-light);
+}
