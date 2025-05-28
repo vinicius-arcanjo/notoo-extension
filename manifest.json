@@ -1,14 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Steam Notion Scraper",
-  "version": "1.0.0",
-  "description": "Scraper de páginas de jogos da Steam que envia dados para o Notion.",
-  "permissions": [
-    "storage"
-  ],
-  "host_permissions": [
-    "https://api.notion.com/*"
-  ],
+  "name": "Notoo",
+  "version": "0.0.1",
+  "description": "Capture dados de páginas e envie diretamente para seu banco no Notion. Prático, rápido e integrado ao seu fluxo.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://api.notion.com/*"],
   "content_scripts": [
     {
       "matches": ["*://store.steampowered.com/app/*"],
@@ -21,6 +17,18 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Steam Notion Scraper"
-  }
+    "default_title": "Notoo"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*", "content.css"],
+      "matches": ["*://store.steampowered.com/app/*"]
+    }
+  ],
+  "options_page": "options.html"
 }
