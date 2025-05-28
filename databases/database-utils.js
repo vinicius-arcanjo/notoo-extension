@@ -26,4 +26,4 @@ function prepareNotionProperties(data, databaseType) {
 }
 
 // Export functions
-export { getModuleForType, prepareNotionProperties };
+export default { getModuleForType, prepareNotionProperties };

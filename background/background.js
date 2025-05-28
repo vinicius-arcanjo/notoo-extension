@@ -1,7 +1,7 @@
 // background.js - Background script for Notoo extension
 
 // Import database utilities
-import * as dbUtils from '../databases/database-utils.js';
+import dbUtils from '../databases/database-utils.js';
 
 // Listen for messages from content scripts
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
@@ -25,6 +25,19 @@ function convertToISODate(dateString) {
         // Portuguese month names
         'jan': '01', 'fev': '02', 'mar': '03', 'abr': '04', 'mai': '05', 'jun': '06',
         'jul': '07', 'ago': '08', 'set': '09', 'out': '10', 'nov': '11', 'dez': '12',
+        // English month names
+        'feb': '02', 'apr': '04', 'may': '05', 'aug': '08', 'sep': '09', 'oct': '10', 'dec': '12',
+        // Spanish month names
+        'ene': '01', 'abr': '04', 'ago': '08', 'dic': '12',
+        // French month names
+        'janv': '01', 'févr': '02', 'mars': '03', 'avr': '04', 'mai': '05', 'juin': '06',
+        'juil': '07', 'août': '08', 'sept': '09', 'oct': '10', 'nov': '11', 'déc': '12',
+        // German month names
+        'jan': '01', 'feb': '02', 'mär': '03', 'apr': '04', 'mai': '05', 'jun': '06',
+        'jul': '07', 'aug': '08', 'sep': '09', 'okt': '10', 'nov': '11', 'dez': '12',
+        // Italian month names
+        'gen': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'mag': '05', 'giu': '06',
+        'lug': '07', 'ago': '08', 'set': '09', 'ott': '10', 'nov': '11', 'dic': '12'
       };
 
       // Remove any dots from abbreviated month names
