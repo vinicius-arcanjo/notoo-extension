@@ -106,6 +106,18 @@ function createFloatingButton() {
   });
 }
 
+// Convert a string to a slug format
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')           // Replace spaces with -
+    .replace(/&/g, '-and-')          // Replace & with 'and'
+    .replace(/[^\w\-]+/g, '')       // Remove all non-word characters
+    .replace(/\-\-+/g, '-');        // Replace multiple - with single -
+}
+
 // Extract game data from the Steam page
 function extractGameData() {
   const title = document.querySelector('.apphub_AppName')?.textContent.trim() || '';
@@ -122,6 +134,21 @@ function extractGameData() {
   const imageElement = document.querySelector('.game_header_image_full');
   const image = imageElement ? imageElement.src : '';
 
+  // Extract price
+  const priceElement = document.querySelector('.game_purchase_price') ||
+                       document.querySelector('.discount_final_price');
+  let priceText = priceElement ? priceElement.textContent.trim() : '';
+
+  // Convert price string to number (remove currency symbols and non-numeric characters)
+  // Keep only digits, decimal point, and comma (which might be used as decimal separator in some locales)
+  let priceValue = priceText.replace(/[^0-9.,]/g, '');
+
+  // Replace comma with dot for decimal separator if needed
+  priceValue = priceValue.replace(',', '.');
+
+  // Convert to number, default to 0 if conversion fails
+  const price = parseFloat(priceValue) || 0;
+
   // Extract genres
   const genreElements = document.querySelectorAll('.details_block a[href*="genre"]');
   const genres = Array.from(genreElements).map(el => el.textContent.trim());
@@ -132,14 +159,18 @@ function extractGameData() {
   if (document.querySelector('.platform_img.mac')) platforms.push('Mac');
   if (document.querySelector('.platform_img.linux')) platforms.push('Linux');
 
+  // Create slug from title
+  const slug = slugify(title);
+
   return {
     title,
     releaseDate,
     description,
     image,
+    price,
     genres,
     platforms,
-    slug: window.location.pathname.split('/')[2],
+    slug,
     rating: 0,
     completed: false,
     playAgain: false,

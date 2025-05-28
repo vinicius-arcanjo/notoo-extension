@@ -207,6 +207,9 @@ async function saveToNotion(data, sendResponse) {
           },
           Played: {
             checkbox: data.played
+          },
+          Price: {
+            number: data.price
           }
         }
       })
