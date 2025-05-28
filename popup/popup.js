@@ -3,7 +3,9 @@
 document.addEventListener('DOMContentLoaded', function() {
   // Get DOM elements
   const notionTokenInput = document.getElementById('notionToken');
-  const notionDatabaseIdInput = document.getElementById('notionDatabaseId');
+  const gamesDatabaseIdInput = document.getElementById('gamesDatabaseId');
+  const moviesDatabaseIdInput = document.getElementById('moviesDatabaseId');
+  const productsDatabaseIdInput = document.getElementById('productsDatabaseId');
   const steamToggle = document.getElementById('steamToggle');
   const saveSettingsButton = document.getElementById('saveSettings');
   const statusMessage = document.getElementById('statusMessage');
@@ -27,11 +29,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Set input values
         notionTokenInput.value = config.notionToken || '';
-        notionDatabaseIdInput.value = config.notionDatabaseId || '';
 
-        // Set toggle states
-        if (config.sites) {
-          steamToggle.checked = config.sites.steam !== false; // Default to true if not set
+        // Set database IDs
+        if (config.databases) {
+          gamesDatabaseIdInput.value = config.databases.games?.id || '';
+          moviesDatabaseIdInput.value = config.databases.movies?.id || '';
+          productsDatabaseIdInput.value = config.databases.products?.id || '';
+
+          // Set toggle states for games sites
+          if (config.databases.games?.sites) {
+            steamToggle.checked = config.databases.games.sites.steam !== false; // Default to true if not set
+          }
+        } else if (config.notionDatabaseId) {
+          // Handle migration from old config format
+          gamesDatabaseIdInput.value = config.notionDatabaseId || '';
+
+          if (config.sites) {
+            steamToggle.checked = config.sites.steam !== false;
+          }
         }
       }
     });
@@ -41,7 +56,9 @@ document.addEventListener('DOMContentLoaded', function() {
   function saveConfig() {
     // Get values from inputs
     const notionToken = notionTokenInput.value.trim();
-    const notionDatabaseId = notionDatabaseIdInput.value.trim();
+    const gamesDatabaseId = gamesDatabaseIdInput.value.trim();
+    const moviesDatabaseId = moviesDatabaseIdInput.value.trim();
+    const productsDatabaseId = productsDatabaseIdInput.value.trim();
     const steamEnabled = steamToggle.checked;
 
     // Validate inputs
@@ -50,8 +67,9 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    if (!notionDatabaseId) {
-      showStatus('Por favor, insira o ID do banco de dados do Notion.', 'error');
+    // At least one database ID should be provided
+    if (!gamesDatabaseId && !moviesDatabaseId && !productsDatabaseId) {
+      showStatus('Por favor, insira pelo menos um ID de banco de dados do Notion.', 'error');
       return;
     }
 
@@ -59,9 +77,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const config = {
       enabled: true,
       notionToken: notionToken,
-      notionDatabaseId: notionDatabaseId,
-      sites: {
-        steam: steamEnabled
+      databases: {
+        games: {
+          id: gamesDatabaseId,
+          sites: {
+            steam: steamEnabled
+          }
+        },
+        movies: {
+          id: moviesDatabaseId,
+          sites: {}
+        },
+        products: {
+          id: productsDatabaseId,
+          sites: {}
+        }
       }
     };
 

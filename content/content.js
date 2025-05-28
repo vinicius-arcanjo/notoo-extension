@@ -4,9 +4,21 @@
 let config = {
   enabled: true,
   notionToken: '',
-  notionDatabaseId: '',
-  sites: {
-    steam: true
+  databases: {
+    games: {
+      id: '',
+      sites: {
+        steam: true
+      }
+    },
+    movies: {
+      id: '',
+      sites: {}
+    },
+    products: {
+      id: '',
+      sites: {}
+    }
   }
 };
 
@@ -14,15 +26,27 @@ let config = {
 chrome.storage.sync.get(['config'], function(result) {
   if (result.config) {
     config = result.config;
+
+    // Initialize extension based on current page
+    initializeExtension();
   }
 });
 
-// Only run on Steam store pages if enabled
-if (window.location.href.includes('store.steampowered.com/app/') && config.sites.steam) {
-  // Wait for the page to fully load
-  window.addEventListener('load', function() {
-    createFloatingButton();
-  });
+// Initialize extension based on current page
+function initializeExtension() {
+  // Check if we're on a Steam store page
+  if (window.location.href.includes('store.steampowered.com/app/')) {
+    // Check if Steam is enabled in the games configuration
+    const steamEnabled = config.databases?.games?.sites?.steam !== false;
+
+    // If Steam is enabled and we have a games database ID, show the button
+    if (steamEnabled && config.databases?.games?.id) {
+      // Wait for the page to fully load
+      window.addEventListener('load', function() {
+        createFloatingButton();
+      });
+    }
+  }
 }
 
 // Create the floating button
@@ -47,7 +71,7 @@ function createFloatingButton() {
       width: 50px;
       height: 50px;
       border-radius: 50%;
-      background-color: #2e59ff;
+      background-color: #000000;
       color: white;
       display: flex;
       align-items: center;
@@ -182,20 +206,30 @@ function extractGameData() {
 function saveToNotion() {
   const button = document.getElementById('notoo-button');
 
+  // Determine the database type based on the current page
+  let databaseType = 'games'; // Default to games
+  let databaseId = '';
+
+  // If we're on Steam, it's a game
+  if (window.location.href.includes('store.steampowered.com')) {
+    databaseType = 'games';
+    databaseId = config.databases?.games?.id;
+  }
+
   // Check if configuration is set
-  if (!config.notionToken || !config.notionDatabaseId) {
+  if (!config.notionToken || !databaseId) {
     button.innerHTML = `
       <div class="notoo-icon">!</div>
-      <div class="notoo-tooltip">Please configure Notion API in extension settings</div>
+      <div class="notoo-tooltip">Please configure Notion API for ${databaseType} in extension settings</div>
     `;
-    button.style.backgroundColor = '#ff4d4d';
+    button.style.backgroundColor = '#000000';
 
     setTimeout(() => {
       button.innerHTML = `
         <div class="notoo-icon">N</div>
         <div class="notoo-tooltip">Save to Notion</div>
       `;
-      button.style.backgroundColor = '#2e59ff';
+      button.style.backgroundColor = '#000000';
     }, 3000);
 
     return;
@@ -213,19 +247,20 @@ function saveToNotion() {
   // Send message to background script to handle the API call
   chrome.runtime.sendMessage({
     action: 'saveToNotion',
-    data: gameData
+    data: gameData,
+    databaseType: databaseType
   }, function(response) {
     if (response && response.success) {
       // Show success message
       button.classList.remove('notoo-saving');
-      button.style.backgroundColor = '#4CAF50';
+      button.style.backgroundColor = '#000000';
       button.innerHTML = `
         <div class="notoo-icon">✓</div>
         <div class="notoo-tooltip">Saved to Notion!</div>
       `;
 
       setTimeout(() => {
-        button.style.backgroundColor = '#2e59ff';
+        button.style.backgroundColor = '#000000';
         button.innerHTML = `
           <div class="notoo-icon">N</div>
           <div class="notoo-tooltip">Save to Notion</div>
@@ -234,14 +269,14 @@ function saveToNotion() {
     } else {
       // Show error message
       button.classList.remove('notoo-saving');
-      button.style.backgroundColor = '#ff4d4d';
+      button.style.backgroundColor = '#000000';
       button.innerHTML = `
         <div class="notoo-icon">!</div>
         <div class="notoo-tooltip">Error: ${response?.error || 'Failed to save'}</div>
       `;
 
       setTimeout(() => {
-        button.style.backgroundColor = '#2e59ff';
+        button.style.backgroundColor = '#000000';
         button.innerHTML = `
           <div class="notoo-icon">N</div>
           <div class="notoo-tooltip">Save to Notion</div>

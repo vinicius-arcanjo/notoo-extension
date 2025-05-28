@@ -1,9 +1,12 @@
 // background.js - Background script for Notoo extension
 
+// Import database utilities
+import * as dbUtils from '../databases/database-utils.js';
+
 // Listen for messages from content scripts
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.action === 'saveToNotion') {
-    saveToNotion(request.data, sendResponse);
+    saveToNotion(request.data, request.databaseType, sendResponse);
     return true; // Required for async sendResponse
   }
 });
@@ -22,19 +25,6 @@ function convertToISODate(dateString) {
         // Portuguese month names
         'jan': '01', 'fev': '02', 'mar': '03', 'abr': '04', 'mai': '05', 'jun': '06',
         'jul': '07', 'ago': '08', 'set': '09', 'out': '10', 'nov': '11', 'dez': '12',
-        // English month names
-        'feb': '02', 'apr': '04', 'may': '05', 'aug': '08', 'sep': '09', 'oct': '10', 'dec': '12',
-        // Spanish month names
-        'ene': '01', 'abr': '04', 'ago': '08', 'dic': '12',
-        // French month names
-        'janv': '01', 'févr': '02', 'mars': '03', 'avr': '04', 'mai': '05', 'juin': '06',
-        'juil': '07', 'août': '08', 'sept': '09', 'oct': '10', 'nov': '11', 'déc': '12',
-        // German month names
-        'jan': '01', 'feb': '02', 'mär': '03', 'apr': '04', 'mai': '05', 'jun': '06',
-        'jul': '07', 'aug': '08', 'sep': '09', 'okt': '10', 'nov': '11', 'dez': '12',
-        // Italian month names
-        'gen': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'mag': '05', 'giu': '06',
-        'lug': '07', 'ago': '08', 'set': '09', 'ott': '10', 'nov': '11', 'dic': '12'
       };
 
       // Remove any dots from abbreviated month names
@@ -133,14 +123,20 @@ function convertToISODate(dateString) {
 }
 
 // Save data to Notion
-async function saveToNotion(data, sendResponse) {
+async function saveToNotion(data, databaseType, sendResponse) {
   try {
     // Get configuration from storage
     const result = await chrome.storage.sync.get(['config']);
-    const config = result.config || { notionToken: '', notionDatabaseId: '' };
+    const config = result.config || { notionToken: '', databases: {} };
 
-    if (!config.notionToken || !config.notionDatabaseId) {
-      sendResponse({ success: false, error: 'Notion API not configured' });
+    // Use the provided database type or default to games
+    databaseType = databaseType || 'games';
+
+    // Get the database ID for the determined type
+    const databaseId = config.databases?.[databaseType]?.id;
+
+    if (!config.notionToken || !databaseId) {
+      sendResponse({ success: false, error: 'Notion API not configured for ' + databaseType });
       return;
     }
 
@@ -153,65 +149,8 @@ async function saveToNotion(data, sendResponse) {
         'Notion-Version': '2022-06-28'
       },
       body: JSON.stringify({
-        parent: { database_id: config.notionDatabaseId },
-        properties: {
-          Title: {
-            title: [
-              {
-                text: {
-                  content: data.title
-                }
-              }
-            ]
-          },
-          ReleaseDate: data.releaseDate ? {
-            date: {
-              start: convertToISODate(data.releaseDate)
-            }
-          } : null,
-          Description: {
-            rich_text: [
-              {
-                text: {
-                  content: data.description.substring(0, 2000) // Notion has a 2000 character limit
-                }
-              }
-            ]
-          },
-          Image: {
-            url: data.image
-          },
-          Genres: {
-            multi_select: data.genres.map(genre => ({ name: genre }))
-          },
-          Platforms: {
-            multi_select: data.platforms.map(platform => ({ name: platform }))
-          },
-          Slug: {
-            rich_text: [
-              {
-                text: {
-                  content: data.slug
-                }
-              }
-            ]
-          },
-          Rating: {
-            number: data.rating
-          },
-          Completed: {
-            checkbox: data.completed
-          },
-          PlayAgain: {
-            checkbox: data.playAgain
-          },
-          Played: {
-            checkbox: data.played
-          },
-          Price: {
-            number: data.price
-          }
-        }
+        parent: { database_id: databaseId },
+        properties: dbUtils.prepareNotionProperties(data, databaseType)
       })
     });
 
@@ -238,9 +177,21 @@ chrome.runtime.onInstalled.addListener(function() {
         config: {
           enabled: true,
           notionToken: '',
-          notionDatabaseId: '',
-          sites: {
-            steam: true
+          databases: {
+            games: {
+              id: '',
+              sites: {
+                steam: true
+              }
+            },
+            movies: {
+              id: '',
+              sites: {}
+            },
+            products: {
+              id: '',
+              sites: {}
+            }
           }
         }
       });

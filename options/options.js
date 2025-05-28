@@ -3,8 +3,11 @@
 document.addEventListener('DOMContentLoaded', function() {
   // Get DOM elements
   const notionTokenInput = document.getElementById('notionToken');
-  const notionDatabaseIdInput = document.getElementById('notionDatabaseId');
+  const gamesDatabaseIdInput = document.getElementById('gamesDatabaseId');
+  const moviesDatabaseIdInput = document.getElementById('moviesDatabaseId');
+  const productsDatabaseIdInput = document.getElementById('productsDatabaseId');
   const steamToggle = document.getElementById('steamToggle');
+  const steamToggleGlobal = document.getElementById('steamToggleGlobal');
   const buttonPositionSelect = document.getElementById('buttonPosition');
   const saveSettingsButton = document.getElementById('saveSettings');
   const resetSettingsButton = document.getElementById('resetSettings');
@@ -15,9 +18,21 @@ document.addEventListener('DOMContentLoaded', function() {
   const defaultConfig = {
     enabled: true,
     notionToken: '',
-    notionDatabaseId: '',
-    sites: {
-      steam: true
+    databases: {
+      games: {
+        id: '',
+        sites: {
+          steam: true
+        }
+      },
+      movies: {
+        id: '',
+        sites: {}
+      },
+      products: {
+        id: '',
+        sites: {}
+      }
     },
     buttonPosition: 'bottom-right'
   };
@@ -30,6 +45,15 @@ document.addEventListener('DOMContentLoaded', function() {
   resetSettingsButton.addEventListener('click', resetConfig);
   testConnectionButton.addEventListener('click', testNotionConnection);
 
+  // Sync Steam toggles
+  steamToggle.addEventListener('change', function() {
+    steamToggleGlobal.checked = this.checked;
+  });
+
+  steamToggleGlobal.addEventListener('change', function() {
+    steamToggle.checked = this.checked;
+  });
+
   // Function to load configuration from storage
   function loadConfig() {
     chrome.storage.sync.get(['config'], function(result) {
@@ -37,11 +61,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Set input values
       notionTokenInput.value = config.notionToken || '';
-      notionDatabaseIdInput.value = config.notionDatabaseId || '';
 
-      // Set toggle states
-      if (config.sites) {
-        steamToggle.checked = config.sites.steam !== false; // Default to true if not set
+      // Set database IDs
+      if (config.databases) {
+        gamesDatabaseIdInput.value = config.databases.games?.id || '';
+
+        // Movies and products are disabled, but we'll still load their values
+        // in case they're re-enabled in the future
+        moviesDatabaseIdInput.value = config.databases.movies?.id || '';
+        productsDatabaseIdInput.value = config.databases.products?.id || '';
+
+        // Set toggle states for games sites
+        if (config.databases.games?.sites) {
+          steamToggle.checked = config.databases.games.sites.steam !== false; // Default to true if not set
+          steamToggleGlobal.checked = steamToggle.checked; // Sync both toggles
+        }
+      } else if (config.notionDatabaseId) {
+        // Handle migration from old config format
+        gamesDatabaseIdInput.value = config.notionDatabaseId || '';
+
+        if (config.sites) {
+          steamToggle.checked = config.sites.steam !== false;
+          steamToggleGlobal.checked = steamToggle.checked; // Sync both toggles
+        }
       }
 
       // Set button position
@@ -55,7 +97,9 @@ document.addEventListener('DOMContentLoaded', function() {
   function saveConfig() {
     // Get values from inputs
     const notionToken = notionTokenInput.value.trim();
-    const notionDatabaseId = notionDatabaseIdInput.value.trim();
+    const gamesDatabaseId = gamesDatabaseIdInput.value.trim();
+    const moviesDatabaseId = moviesDatabaseIdInput.value.trim();
+    const productsDatabaseId = productsDatabaseIdInput.value.trim();
     const steamEnabled = steamToggle.checked;
     const buttonPosition = buttonPositionSelect.value;
 
@@ -65,8 +109,8 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    if (!notionDatabaseId) {
-      showStatus('Por favor, insira o ID do banco de dados do Notion.', 'error');
+    if (!gamesDatabaseId) {
+      showStatus('Por favor, insira o ID do banco de dados de jogos do Notion.', 'error');
       return;
     }
 
@@ -74,9 +118,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const config = {
       enabled: true,
       notionToken: notionToken,
-      notionDatabaseId: notionDatabaseId,
-      sites: {
-        steam: steamEnabled
+      databases: {
+        games: {
+          id: gamesDatabaseId,
+          sites: {
+            steam: steamEnabled
+          }
+        },
+        movies: {
+          id: moviesDatabaseId,
+          sites: {}
+        },
+        products: {
+          id: productsDatabaseId,
+          sites: {}
+        }
       },
       buttonPosition: buttonPosition
     };
@@ -90,7 +146,30 @@ document.addEventListener('DOMContentLoaded', function() {
   // Function to reset configuration to defaults
   function resetConfig() {
     if (confirm('Tem certeza que deseja restaurar as configurações padrão?')) {
-      chrome.storage.sync.set({ config: defaultConfig }, function() {
+      // Create a fresh copy of the default config
+      const freshDefaultConfig = {
+        enabled: true,
+        notionToken: '',
+        databases: {
+          games: {
+            id: '',
+            sites: {
+              steam: true
+            }
+          },
+          movies: {
+            id: '',
+            sites: {}
+          },
+          products: {
+            id: '',
+            sites: {}
+          }
+        },
+        buttonPosition: 'bottom-right'
+      };
+
+      chrome.storage.sync.set({ config: freshDefaultConfig }, function() {
         loadConfig(); // Reload the form with default values
         showStatus('Configurações restauradas para os valores padrão.', 'success');
       });
@@ -100,10 +179,10 @@ document.addEventListener('DOMContentLoaded', function() {
   // Function to test Notion API connection
   async function testNotionConnection() {
     const notionToken = notionTokenInput.value.trim();
-    const notionDatabaseId = notionDatabaseIdInput.value.trim();
+    const gamesDatabaseId = gamesDatabaseIdInput.value.trim();
 
-    if (!notionToken || !notionDatabaseId) {
-      showStatus('Por favor, insira o token da API e o ID do banco de dados.', 'error');
+    if (!notionToken || !gamesDatabaseId) {
+      showStatus('Por favor, insira o token da API e o ID do banco de dados de jogos.', 'error');
       return;
     }
 
@@ -111,8 +190,8 @@ document.addEventListener('DOMContentLoaded', function() {
     testConnectionButton.disabled = true;
 
     try {
-      // Test the connection by trying to retrieve the database
-      const response = await fetch(`https://api.notion.com/v1/databases/${notionDatabaseId}`, {
+      // Test the connection by trying to retrieve the games database
+      const response = await fetch(`https://api.notion.com/v1/databases/${gamesDatabaseId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${notionToken}`,
@@ -122,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (response.ok) {
         const data = await response.json();
-        showStatus(`Conexão bem-sucedida! Banco de dados "${data.title[0]?.plain_text || 'Sem título'}" encontrado.`, 'success');
+        showStatus(`Conexão bem-sucedida! Banco de dados de jogos "${data.title[0]?.plain_text || 'Sem título'}" encontrado.`, 'success');
       } else {
         const errorData = await response.json();
         showStatus(`Erro: ${errorData.message || 'Falha na conexão com o Notion.'}`, 'error');
