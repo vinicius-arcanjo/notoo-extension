@@ -3,6 +3,9 @@
 // Import database utilities
 import dbUtils from '../databases/database-utils.js';
 
+// Export the convertToISODate function for use in other modules
+export { convertToISODate };
+
 // Listen for messages from content scripts
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.action === 'saveToNotion') {

@@ -1,5 +1,8 @@
 // games.js - Game-specific functionality for Notoo extension
 
+// Import the convertToISODate function from background.js
+import { convertToISODate } from '../../background/background.js';
+
 // Extract game data from the Steam page
 function extractGameData() {
   const title = document.querySelector('.apphub_AppName')?.textContent.trim() || '';
@@ -86,7 +89,7 @@ function prepareNotionProperties(data) {
     },
     ReleaseDate: data.releaseDate ? {
       date: {
-        start: data.releaseDate
+        start: convertToISODate(data.releaseDate)
       }
     } : null,
     Description: {
